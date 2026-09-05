@@ -1,0 +1,52 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Little Lemon - Reservations</title>
+    <style>
+        body { font-family: sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; }
+        h1 { color: #495e57; }
+        label { display: block; margin: 0.5rem 0 0.25rem; font-weight: bold; }
+        input, select, button { padding: 0.5rem; font-size: 1rem; }
+        .row { display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap; }
+        .row > div { flex: 1; min-width: 200px; }
+        #error { color: #b00020; margin-top: 0.5rem; min-height: 1.2em; }
+        #reservations { margin-top: 2rem; }
+        #reservations li { padding: 0.25rem 0; }
+        button { background: #f4ce14; border: 0; cursor: pointer; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+    <h1>Little Lemon</h1>
+    <h2>Book a table</h2>
+
+    <form id="booking-form" novalidate>
+        <div class="row">
+            <div>
+                <label for="first_name">First name</label>
+                <input type="text" id="first_name" name="first_name" required>
+            </div>
+            <div>
+                <label for="reservation_date">Reservation date</label>
+                <input type="date" id="reservation_date" name="reservation_date" required>
+            </div>
+            <div>
+                <label for="reservation_slot">Reservation slot</label>
+                <select id="reservation_slot" name="reservation_slot" required></select>
+            </div>
+        </div>
+        <p id="error"></p>
+        <button type="submit" id="submit-btn">Reserve</button>
+    </form>
+
+    <section id="reservations">
+        <h2>Reservations for <span id="res-date"></span></h2>
+        <p id="no-bookings" style="display:none; color:#888;">No Bookings</p>
+        <ul id="reservations-list"></ul>
+    </section>
+
+    <script src="{% static 'booking/app.js' %}"></script>
+</body>
+</html>
