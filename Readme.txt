@@ -142,7 +142,8 @@ How to test
 Option A — Browser (browsable DRF UI)
   1. Start the server:  python manage.py runserver
   2. Get a token:        POST http://127.0.0.1:8000/api-token-auth/
-                          with JSON body { "username": "root", "password": "rootpass123" }
+                          with JSON body { "username": "<your-username>",
+                                           "password": "<your-password>" }
   3. Open any endpoint in Chrome / Firefox, e.g.
        http://127.0.0.1:8000/restaurant/menu/menu-items/
   4. Click the green "Authorize" button (top-right) and paste:
@@ -152,16 +153,19 @@ Option A — Browser (browsable DRF UI)
 Option B — Insomnia / Postman
   1. Import Insomnia_workspace.json (File -> Import -> From File).
      The workspace contains every endpoint pre-wired with auth templates.
-  2. Set the Base environment variables:
-       base_url = http://127.0.0.1:8000
-       auth_token = <paste token from /api-token-auth/ or /auth/token/login/>
+  2. Set the Base environment variables to your own credentials:
+       base_url    = http://127.0.0.1:8000
+       auth_token  = <paste token from /api-token-auth/ or /auth/token/login/>
+       username    = <your-username>
+       password    = <your-password>
   3. Send requests. Authed calls automatically pick up the
      "Authorization: Token {{ auth_token }}" header.
 
 Option C — curl
   TOKEN=$(curl -s -X POST http://127.0.0.1:8000/api-token-auth/ \
            -H 'Content-Type: application/json' \
-           -d '{"username":"root","password":"rootpass123"}' | python -c 'import sys,json;print(json.load(sys.stdin)["token"])')
+           -d '{"username":"<your-username>","password":"<your-password>"}' \
+           | python -c 'import sys,json;print(json.load(sys.stdin)["token"])')
 
   curl -H "Authorization: Token $TOKEN" http://127.0.0.1:8000/restaurant/menu/menu-items/
 
@@ -184,7 +188,9 @@ Expected status codes
 
 Notes for reviewers
 -------------------
-- Default admin: username=root, password=rootpass123 (created during local setup).
+- Create your own admin / manager / customer accounts via /auth/users/ or
+  `python manage.py createsuperuser` before running peer tests. There are
+  no default credentials shipped with this project.
 - Default roles: Manager, Delivery crew (assign via /api/groups/.../users).
 - Pagination is enabled (PAGE_SIZE=2 in REST_FRAMEWORK). Use ?page=N or
   ?ordering=field,-otherfield to navigate.
@@ -192,6 +198,11 @@ Notes for reviewers
   DEFAULT_PERMISSION_CLASSES = (IsAuthenticated,)).
 - The /api/bookings, /api/slots, /api/book endpoints (booking app) are public and
   used by the static HTML frontend at / and /book.
+- Override sensitive defaults in your environment:
+    DJANGO_SECRET_KEY=<long-random>
+    LITTLELEMON_DB_USER=<db-user>
+    LITTLELEMON_DB_PASSWORD=<db-pass>
+    LITTLELEMON_DB_HOST=<db-host>
 
 
 Files of interest

@@ -19,8 +19,8 @@
       "data": {
         "base_url": "http://127.0.0.1:8000",
         "auth_token": "",
-        "username": "manager1",
-        "password": "Authpass123!"
+        "username": "your-username",
+        "password": "your-password"
       },
       "dataPropertyOrder": {
         "&": ["base_url", "auth_token", "username", "password"]
@@ -55,7 +55,7 @@
       ],
       "body": {
         "mimeType": "application/json",
-        "text": "{\n  \"username\": \"newuser\",\n  \"password\": \"SuperSafe123!\",\n  \"email\": \"newuser@example.com\"\n}"
+        "text": "{\n  \"username\": \"<your-username>\",\n  \"password\": \"<your-password>\",\n  \"email\": \"you@example.com\"\n}"
       },
       "parameters": [],
       "authentication": {},
@@ -109,7 +109,7 @@
       ],
       "body": {
         "mimeType": "application/json",
-        "text": "{\n  \"username\": \"root\",\n  \"password\": \"rootpass123\"\n}"
+        "text": "{\n  \"username\": \"<your-username>\",\n  \"password\": \"<your-password>\"\n}"
       },
       "parameters": [],
       "authentication": {},

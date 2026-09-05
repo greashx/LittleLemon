@@ -21,7 +21,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-c535jldhef2+y8m91%d@519ilfu9)u9c@4m*=xst(#5ovrh4p('
+# In production, set DJANGO_SECRET_KEY in the environment. The dev fallback below
+# is intentionally marked "insecure" so Django refuses to start with DEBUG=False.
+SECRET_KEY = os.environ.get(
+    'DJANGO_SECRET_KEY',
+    'django-insecure-DEV-ONLY-CHANGE-ME-BEFORE-DEPLOY',
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -85,9 +90,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': os.environ.get('LITTLELEMON_DB_NAME', 'littlelemon'),
-        'USER': os.environ.get('LITTLELEMON_DB_USER', 'root'),
+        'USER': os.environ.get('LITTLELEMON_DB_USER', 'CHANGE_ME_DB_USER'),
         'PASSWORD': os.environ.get('LITTLELEMON_DB_PASSWORD', ''),
-        'HOST': os.environ.get('LITTLELEMON_DB_HOST', 'localhost'),
+        'HOST': os.environ.get('LITTLELEMON_DB_HOST', '127.0.0.1'),
         'PORT': os.environ.get('LITTLELEMON_DB_PORT', '3306'),
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",

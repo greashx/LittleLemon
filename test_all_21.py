@@ -1,4 +1,8 @@
-"""End-to-end functional test covering all 21 rubric criteria."""
+"""End-to-end functional test covering all 21 rubric criteria.
+
+NOTE: This script is a development-only integration check. It creates
+local users with throwaway passwords. Do NOT use real credentials here.
+"""
 import os, django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "LittleLemon.settings")
 django.setup()
@@ -7,6 +11,12 @@ from django.test import Client
 from django.contrib.auth.models import User, Group
 from rest_framework.authtoken.models import Token
 from LittleLemonDRF.models import Category, MenuItem, Cart, Order, OrderItem
+
+# Throwaway credentials used only inside this test script.
+ADMIN_PASSWORD = "admin-test-pass"
+MANAGER_PASSWORD = "manager-test-pass"
+CREW_PASSWORD = "crew-test-pass"
+CUSTOMER_PASSWORD = "customer-test-pass"
 
 BASE = "/api"
 c_admin = Client(HTTP_USER_AGENT="test")
@@ -35,7 +45,7 @@ def assert_eq(actual, expected, label):
 step(5, "Create groups and admin (Manager can log in)")
 manager_group, _ = Group.objects.get_or_create(name="Manager")
 crew_group, _ = Group.objects.get_or_create(name="Delivery crew")
-admin = User.objects.create_superuser("root", "root@example.com", "rootpass123")
+admin = User.objects.create_superuser("root", "root@example.com", ADMIN_PASSWORD)
 admin_token, _ = Token.objects.get_or_create(user=admin)
 c_admin.defaults["HTTP_AUTHORIZATION"] = f"Token {admin_token}"
 r = c_admin.get(f"{BASE}/groups/manager/users")
@@ -43,7 +53,7 @@ assert_eq(r.status_code, 200, "admin access manager group with admin token (crit
 
 # 1. Admin assigns manager1 to Manager group
 step(1, "Admin assigns user to Manager group")
-m_user = User.objects.create_user("manager1", "m@example.com", "manpass123")
+m_user = User.objects.create_user("manager1", "m@example.com", MANAGER_PASSWORD)
 m_token, _ = Token.objects.get_or_create(user=m_user)
 r = c_admin.post(f"{BASE}/groups/manager/users", data={"username": "manager1"}, content_type="application/json")
 assert_eq(r.status_code, 201, "admin POST /groups/manager/users")
@@ -82,7 +92,7 @@ assert_eq(pizza.featured, True, "pizza featured set by manager")
 
 # 7. Manager assigns delivery crew
 step(7, "Manager assigns user to delivery crew")
-crew_user = User.objects.create_user("crew1", "c@example.com", "crewpass123")
+crew_user = User.objects.create_user("crew1", "c@example.com", CREW_PASSWORD)
 crew_token, _ = Token.objects.get_or_create(user=crew_user)
 r = c_man.post(f"{BASE}/groups/delivery-crew/users", data={"username":"crew1"}, content_type="application/json")
 assert_eq(r.status_code, 201, "manager POST /groups/delivery-crew/users")
@@ -91,16 +101,16 @@ assert_eq(crew_user.groups.filter(name="Delivery crew").exists(), True, "crew1 i
 
 # 11. Customer registers via Djoser
 step(11, "Customer registration")
-r = c_cust.post(f"{BASE}/auth/users/", data={"username":"customer1","password":"custpass123","email":"c1@x.com","re_password":"custpass123"}, content_type="application/json")
+r = c_cust.post(f"{BASE}/auth/users/", data={"username":"customer1","password":CUSTOMER_PASSWORD,"email":"c1@x.com","re_password":CUSTOMER_PASSWORD}, content_type="application/json")
 print(f"  register status: {r.status_code} body: {r.content[:200]}")
 if r.status_code == 400:
-    r = c_cust.post(f"{BASE}/auth/users/", data={"username":"customer1","password":"custpass123","email":"c1@x.com"}, content_type="application/json")
+    r = c_cust.post(f"{BASE}/auth/users/", data={"username":"customer1","password":CUSTOMER_PASSWORD,"email":"c1@x.com"}, content_type="application/json")
     print(f"  register status2: {r.status_code} body: {r.content[:200]}")
 assert r.status_code in (201, 200), f"register failed: {r.content}"
 
 # 12. Customer logs in
 step(12, "Customer logs in for token")
-r = c_cust.post("/token/login/", data={"username":"customer1","password":"custpass123"}, content_type="application/json")
+r = c_cust.post("/token/login/", data={"username":"customer1","password":CUSTOMER_PASSWORD}, content_type="application/json")
 print(f"  login status: {r.status_code} body: {r.content[:200]}")
 assert r.status_code == 200, f"login failed: {r.content}"
 cust_token = r.json()["auth_token"]

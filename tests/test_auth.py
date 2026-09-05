@@ -6,6 +6,9 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 
 
+TEST_PASSWORD = "test-pass-1234"
+
+
 class AuthFlowTest(TestCase):
     """End-to-end Djoser + DRF token authentication flow."""
 
@@ -15,7 +18,7 @@ class AuthFlowTest(TestCase):
     def test_register_via_djoser(self):
         payload = {
             "username": "newuser",
-            "password": "SuperSafe123!",
+            "password": TEST_PASSWORD,
             "email": "newuser@example.com",
         }
         r = self.client.post("/auth/users/", payload, format="json")
@@ -23,10 +26,10 @@ class AuthFlowTest(TestCase):
         self.assertTrue(User.objects.filter(username="newuser").exists())
 
     def test_obtain_auth_token(self):
-        User.objects.create_user(username="tokenuser", password="pw12345!")
+        User.objects.create_user(username="tokenuser", password=TEST_PASSWORD)
         r = self.client.post(
             "/api-token-auth/",
-            {"username": "tokenuser", "password": "pw12345!"},
+            {"username": "tokenuser", "password": TEST_PASSWORD},
             format="json",
         )
         self.assertEqual(r.status_code, status.HTTP_200_OK)
@@ -34,16 +37,16 @@ class AuthFlowTest(TestCase):
         self.assertEqual(len(r.json()["token"]), 40)
 
     def test_obtain_auth_token_invalid(self):
-        User.objects.create_user(username="tokenuser", password="pw12345!")
+        User.objects.create_user(username="tokenuser", password=TEST_PASSWORD)
         r = self.client.post(
             "/api-token-auth/",
-            {"username": "tokenuser", "password": "WRONG"},
+            {"username": "tokenuser", "password": "wrong-password"},
             format="json",
         )
         self.assertEqual(r.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_token_authenticates_protected_endpoint(self):
-        user = User.objects.create_user(username="authuser", password="pw12345!")
+        user = User.objects.create_user(username="authuser", password=TEST_PASSWORD)
         token, _ = Token.objects.get_or_create(user=user)
         self.client.credentials(HTTP_AUTHORIZATION=f"Token {token.key}")
         r = self.client.get("/auth/users/")
