@@ -9,6 +9,10 @@ from .models import Booking
 SLOTS = list(range(10, 20))
 
 
+def index(request):
+    return render(request, 'index.html')
+
+
 def home(request):
     return render(request, 'booking/home.html')
 

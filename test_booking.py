@@ -30,25 +30,26 @@ print(f"  Booking table exists: {Booking._meta.db_table}")
 # 2. Frontend UI loaded
 step(2, "Home page loads with date picker and today pre-filled")
 r = c.get('/')
-assert_eq(r.status_code, 200, "GET /")
+assert_eq(r.status_code, 200, "GET / (landing)")
 body = r.content.decode()
 import re
-m_date = re.search(r'type="date"', body)
-assert_eq(bool(m_date), True, "date input has type='date'")
-assert_eq('id="reservation_date"' in body, True, "date input has correct id")
-m_first = re.search(r'id="first_name"', body)
-m_slot = re.search(r'id="reservation_slot"', body)
-assert_eq(bool(m_first and m_slot), True, "first_name and reservation_slot present")
-assert_eq('required' in body.split('id="reservation_date"')[1][:200], True, "date is required")
+assert_eq('Little Lemon' in body, True, "landing page contains title")
+assert_eq('{% static' not in body, True, "template rendered (no raw template tags)")
+
+# Booking form at /book
+r = c.get('/book')
+assert_eq(r.status_code, 200, "GET /book (booking form)")
+form_body = r.content.decode()
+m_date = re.search(r'type="date"', form_body)
+assert_eq(bool(m_date), True, "date input has type='date' in booking form")
+assert_eq('id="first_name"' in form_body, True, "first_name present in booking form")
+assert_eq('id="reservation_slot"' in form_body, True, "reservation_slot present in booking form")
+assert_eq('required' in form_body.split('id="reservation_date"')[1][:200], True, "date is required in booking form")
 
 # Check the JS auto-pre-selects today
-m_today_js = re.search(r'\$date\.value\s*=\s*todayISO', body.replace('\n', ' '))
 js_check = c.get('/static/booking/app.js')
 assert_eq(js_check.status_code, 200, "static JS served")
-if hasattr(js_check, 'streaming_content') and not hasattr(js_check, 'content'):
-    js_text = b''.join(js_check.streaming_content).decode()
-else:
-    js_text = js_check.content.decode()
+js_text = b''.join(js_check.streaming_content).decode() if hasattr(js_check, 'streaming_content') and not hasattr(js_check, 'content') else js_check.content.decode()
 assert_eq('todayISO' in js_text and '$date.value = todayISO()' in js_text, True, "JS auto-selects today's date")
 
 # 4. JSON API
@@ -101,8 +102,8 @@ assert_eq("fetch(" in js_text, True, "JS uses fetch() API")
 assert_eq("method: 'POST'" in js_text or '"POST"' in js_text, True, "POST via fetch")
 # Date change triggers refresh
 assert_eq("addEventListener('change'" in js_text, True, "date change triggers fetch refresh")
-# No-bookings message
-assert_eq('No Bookings' in body, True, "UI shows 'No Bookings' when empty")
+# No-bookings message in booking form
+assert_eq('No Bookings' in form_body, True, "UI shows 'No Bookings' when empty")
 
 # 4. No bookings UI handling
 r = c.get('/api/bookings?date=2099-01-01')
