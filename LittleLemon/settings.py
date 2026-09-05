@@ -159,4 +159,5 @@ DJOSER = {
     'USER_CREATE_PASSWORD_RETYPE': False,
     'SEND_ACTIVATION_EMAIL': False,
     'SERIALIZERS': {},
+    "USER_ID_FIELD": "username",
 }
